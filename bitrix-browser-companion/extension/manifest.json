@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Marta Browser Companion",
+  "version": "0.1.0",
+  "key": "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALdDIr2SyoV1Z5awMdzvt7zhR3AvqRwCVfUN9rYJnfZrSXxXMEqS3q44rW6p9ZCAa8cw90odKueN3B3KsRznX5MCAwEAAQ==",
+  "permissions": ["nativeMessaging", "tabs", "tabGroups", "storage", "activeTab", "scripting", "sidePanel"],
+  "host_permissions": ["<all_urls>"],
+  "background": {"service_worker": "service-worker.js", "type": "module"},
+  "action": {"default_title": "Marta Browser Companion"},
+  "side_panel": {"default_path": "sidepanel.html"}
+}

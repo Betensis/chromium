@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marta · Browser companion</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">M</span>
+      <span class="brand__name">Marta</span>
+    </div>
+    <button id="new-thread" class="icon-btn" type="button" title="Новый тред" aria-label="Новый тред">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="4"/>
+        <path d="M12 8v8M8 12h8"/>
+      </svg>
+    </button>
+  </header>
+
+  <main id="messages" aria-live="polite">
+    <div id="empty" class="empty-state">
+      <h2 class="empty-state__title">Чем помочь?</h2>
+      <p class="empty-state__subtitle">Марта видит открытую страницу и может с ней работать.</p>
+      <div class="suggest-chips">
+        <button type="button" class="suggest-chip" data-query="О чём эта страница?">О чём эта страница?</button>
+        <button type="button" class="suggest-chip" data-query="Кратко перескажи">Кратко перескажи</button>
+        <button type="button" class="suggest-chip" data-query="Найди контакты на странице">Найди контакты на странице</button>
+        <button type="button" class="suggest-chip" data-query="Что здесь важное?">Что здесь важное?</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="typing" class="typing" hidden aria-hidden="true">
+    <span></span><span></span><span></span>
+  </div>
+
+  <p id="status" role="status">Подключение к native host…</p>
+
+  <div class="composer">
+    <div class="composer-actions">
+      <button id="choose-workspace" class="icon-btn" type="button" title="Выбрать рабочую папку" aria-label="Выбрать рабочую папку">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 7.5c0-1.1.9-2 2-2h3.5l1.5 2H19c1.1 0 2 .9 2 2v7c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-7Z"/>
+        </svg>
+      </button>
+      <button id="context-toggle" class="icon-btn context-toggle" type="button" aria-pressed="true" title="Марта видит страницу — нажмите, чтобы выключить" aria-label="Марта видит страницу — нажмите, чтобы выключить">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <span class="context-toggle__label">Видит страницу</span>
+      </button>
+    </div>
+    <form id="chat-form">
+      <label class="sr-only" for="message">Сообщение для Марты</label>
+      <textarea id="message" rows="3" maxlength="16000" placeholder="Сообщение Марте" required></textarea>
+      <button type="submit">Отправить</button>
+    </form>
+    <output id="workspace-path" class="workspace-path" aria-live="polite">Рабочая папка: не выбрана</output>
+  </div>
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

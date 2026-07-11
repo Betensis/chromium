@@ -1,0 +1,5 @@
+config/config.local.json
+__pycache__/
+tests/__pycache__/
+.playwright-cli/
+demo-workspace/

@@ -1,0 +1,8 @@
+{
+  "martaUrl": "http://127.0.0.1:8000",
+  "browserToken": "replace-with-local-browser-token",
+  "portalHost": "ditto.bx.lan",
+  "userId": 1,
+  "clientId": "replace-with-demo-client-id",
+  "workspace": "/absolute/path/to/demo-workspace"
+}
