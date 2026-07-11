@@ -23,9 +23,9 @@ namespace os_crypt_async {
 class Encryptor;
 }
 
-// Backs the chrome://bitrix-search WebUI. Talks to the BitrixGPT Search
+// Backs the chrome://bitrix-search WebUI. Talks to the Bitrix Search
 // streaming (SSE) backend and relays structured progress/answer events to
-// the page. See the C++<->JS contract in the BitrixGPT Search spec for the
+// the page. See the C++<->JS contract in the Bitrix Search spec for the
 // exact message/event names and payload shapes.
 class BitrixSearchHandler : public content::WebUIMessageHandler,
                             public network::SimpleURLLoaderStreamConsumer {

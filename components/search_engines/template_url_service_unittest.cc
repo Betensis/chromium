@@ -164,13 +164,13 @@ TEST_F(TemplateURLServiceUnitTest, UpdateUserSelectedDefaultSearchEnginePref) {
   EXPECT_EQ("https://custom2.com/search2?q={searchTerms}", *pref_url);
 }
 
-TEST_F(TemplateURLServiceUnitTest, ForcesBitrixGptAsDefaultSearchEngine) {
+TEST_F(TemplateURLServiceUnitTest, ForcesBitrixSearchAsDefaultSearchEngine) {
   template_url_service().Load();
   TemplateURLServiceLoadWaiter().WaitForLoadComplete(template_url_service());
   ASSERT_TRUE(template_url_service().GetDefaultSearchProvider());
   EXPECT_EQ("chrome://bitrix-search/?q={searchTerms}",
             template_url_service().GetDefaultSearchProvider()->url());
-  EXPECT_EQ(u"BitrixGPT", template_url_service().GetDefaultSearchProvider()->short_name());
+  EXPECT_EQ(u"Bitrix Search", template_url_service().GetDefaultSearchProvider()->short_name());
 }
 
 class TemplateURLServiceUpdateLastVisitedTest

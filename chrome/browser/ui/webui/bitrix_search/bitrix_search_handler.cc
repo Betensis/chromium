@@ -166,7 +166,7 @@ void BitrixSearchHandler::StartSearchQuery(const std::string& query,
   if (query.empty()) return;
   AllowJavascript();
   if (!HasConfiguredToken()) {
-    Fail("token", "Токен BitrixGPT Search не настроен.");
+    Fail("token", "Токен Bitrix Search не настроен.");
     return;
   }
   const int operation_id = ++operation_id_;
@@ -245,7 +245,7 @@ void BitrixSearchHandler::DoStartSearchQuery(int operation_id,
   if (query.empty()) return;
   const std::string token = GetEffectiveToken();
   if (token.empty()) {
-    Fail("token", "Токен BitrixGPT Search не настроен.");
+    Fail("token", "Токен Bitrix Search не настроен.");
     return;
   }
   base::DictValue body;
@@ -318,7 +318,7 @@ void BitrixSearchHandler::OnComplete(bool success) {
     }
     const int net_error = loader_ ? loader_->NetError() : net::ERR_FAILED;
     if (response_code == 401 || response_code == 403) {
-      Fail("token", "Токен BitrixGPT Search недействителен.");
+      Fail("token", "Токен Bitrix Search недействителен.");
     } else if (!success || net_error != net::OK) {
       Fail("network", "Сервис поиска недоступен.");
     } else {
