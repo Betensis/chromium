@@ -11,9 +11,13 @@ source_set("bitrix_search") {
   ]
   deps = [
     "//base",
+    "//chrome/browser:browser_process",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/resources/bitrix_search:resources",
     "//chrome/common",
+    "//components/os_crypt/async/browser",
+    "//components/os_crypt/async/common",
+    "//components/prefs",
     "//content/public/browser",
     "//services/network/public/cpp",
     "//ui/webui",

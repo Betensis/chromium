@@ -14,7 +14,7 @@ class BitrixSearchUIConfig : public content::DefaultWebUIConfig<BitrixSearchUI> 
 
 class BitrixSearchUI : public content::WebUIController {
  public:
-  explicit BitrixSearchUI(content::WebUI* web_ui);
+  BitrixSearchUI(content::WebUI* web_ui, const GURL& url);
   ~BitrixSearchUI() override;
 };
 

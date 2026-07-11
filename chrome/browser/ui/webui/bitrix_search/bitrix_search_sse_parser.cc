@@ -3,14 +3,49 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
+namespace {
+// Bound on a single buffered (not yet dispatched) SSE block. See
+// IsOverflowing().
+constexpr size_t kMaxBufferedBytes = 256 * 1024;  // 256 KB
+}  // namespace
+
 std::vector<BitrixSearchSseEvent> BitrixSearchSseParser::Consume(
     std::string_view chunk) {
   buffer_.append(chunk);
+  NormalizeLineEndings(/*eof=*/false);
   return Drain(false);
 }
 
 std::vector<BitrixSearchSseEvent> BitrixSearchSseParser::Finish() {
+  NormalizeLineEndings(/*eof=*/true);
   return Drain(true);
+}
+
+void BitrixSearchSseParser::NormalizeLineEndings(bool eof) {
+  size_t pos = 0;
+  while ((pos = buffer_.find('\r', pos)) != std::string::npos) {
+    if (pos + 1 < buffer_.size()) {
+      if (buffer_[pos + 1] == '\n') {
+        // CRLF: drop the '\r', keep the '\n'; re-check from the same `pos`
+        // (now pointing at that '\n', which is not itself a '\r').
+        buffer_.erase(pos, 1);
+        continue;
+      }
+      // Lone CR (old Mac style) followed by more data: it's a line ending.
+      buffer_[pos] = '\n';
+      ++pos;
+      continue;
+    }
+    // Trailing '\r' with nothing after it (yet). Only resolve it to '\n' at
+    // EOF; otherwise it may be the first half of a '\r\n' pair split across
+    // this chunk and the next one, so leave it buffered as-is.
+    if (eof) buffer_[pos] = '\n';
+    break;
+  }
+}
+
+bool BitrixSearchSseParser::IsOverflowing() const {
+  return buffer_.size() > kMaxBufferedBytes;
 }
 
 std::vector<BitrixSearchSseEvent> BitrixSearchSseParser::Drain(bool finish) {

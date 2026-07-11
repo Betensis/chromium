@@ -6,21 +6,144 @@
   <title>BitrixGPT Search</title>
   <link rel="stylesheet" href="bitrix_search.css">
 </head>
-<body>
-  <header><a class="brand" href="chrome://newtab"><span class="mark">B</span><b>BitrixGPT</b><span>Search</span></a></header>
-  <main>
-    <form id="searchForm"><input id="query" maxlength="400" autocomplete="off" placeholder="Найдите ответ в интернете"><button>Найти</button></form>
-    <section id="hero"><div class="eyebrow">ИНТЕЛЛЕКТУАЛЬНЫЙ ПОИСК</div><h1 id="title">Что вы хотите узнать?</h1><p id="subtitle">BitrixGPT изучит источники и соберёт ответ с проверяемыми ссылками.</p></section>
-    <div id="layout" hidden>
-      <article>
-        <div class="sectionTitle"><span class="spark">✦</span> Ответ BitrixGPT</div>
-        <div id="answer" class="answer skeleton"><i></i><i></i><i></i></div>
-        <div id="sourcesWrap" hidden><h2>Источники</h2><div id="sources"></div></div>
-      </article>
-      <aside><div class="sectionTitle"><span class="pulse"></span> Ход поиска</div><ol id="steps"><li class="active">Подключаюсь к поисковому агенту</li></ol></aside>
-    </div>
-    <div id="error" hidden><b>Не удалось выполнить поиск</b><p id="errorText"></p><button id="retry">Попробовать снова</button></div>
+<body class="app">
+  <div class="bgGlow" aria-hidden="true"></div>
+
+  <header class="header">
+    <a class="brand" href="chrome://newtab">
+      <span class="brand__mark">B</span>
+      <span class="brand__name">BitrixGPT<em>Search</em></span>
+    </a>
+    <button id="gearBtn" class="iconBtn" type="button" aria-label="Настройки токена" title="Настройки токена"></button>
+  </header>
+
+  <main class="main">
+
+    <section id="heroSection" class="hero">
+      <p class="eyebrow">Интеллектуальный поиск</p>
+      <h1 class="hero__title">Что вы хотите узнать?</h1>
+      <p class="hero__subtitle">BitrixGPT изучит источники в интернете и соберёт ответ с проверяемыми ссылками.</p>
+      <form id="heroForm" class="searchBar searchBar--hero">
+        <span class="searchBar__icon" data-icon="search"></span>
+        <input id="heroInput" class="searchBar__input" type="text" maxlength="400" autocomplete="off"
+               placeholder="Например: что нового в Bitrix24?" aria-label="Поисковый запрос">
+        <button class="searchBar__submit" type="submit">Найти</button>
+      </form>
+      <div id="heroModeSwitch" class="modeSwitch modeSwitch--hero" role="group" aria-label="Режим поиска">
+        <span class="modeSwitch__thumb" aria-hidden="true"></span>
+        <button type="button" class="modeSwitch__btn" data-mode="simple" aria-pressed="false">
+          <span class="modeSwitch__icon" data-icon="zap"></span>
+          <span class="modeSwitch__label">Быстрый</span>
+        </button>
+        <button type="button" class="modeSwitch__btn" data-mode="deep" aria-pressed="false">
+          <span class="modeSwitch__icon" data-icon="spark"></span>
+          <span class="modeSwitch__label">Deep Research</span>
+        </button>
+      </div>
+      <div id="exampleChips" class="chips">
+        <button type="button" class="chip" data-query="Что нового в Bitrix24?">Что нового в Bitrix24?</button>
+        <button type="button" class="chip" data-query="Как устроен CoPilot в Bitrix24?">Как устроен CoPilot?</button>
+        <button type="button" class="chip" data-query="Чем CRM Bitrix24 отличается от конкурентов?">Чем CRM отличается от конкурентов?</button>
+        <button type="button" class="chip" data-query="Как настроить автоматизацию в Bitrix24?">Как настроить автоматизацию?</button>
+      </div>
+    </section>
+
+    <section id="onboardingSection" class="onboarding" hidden>
+      <div class="card onboarding__card">
+        <span class="onboarding__icon" data-icon="lock"></span>
+        <h2 class="onboarding__title">Подключите BitrixGPT</h2>
+        <p class="onboarding__text">Чтобы агент мог искать в интернете и присылать ответы, один раз укажите токен доступа.</p>
+        <form id="onboardingForm" class="onboarding__form">
+          <input id="onboardingInput" type="password" autocomplete="off" placeholder="wsa_…" aria-label="Токен доступа">
+          <button type="submit">Подключить и найти</button>
+        </form>
+        <p id="onboardingError" class="onboarding__error" hidden></p>
+        <p class="onboarding__hint">Токен сохраняется в защищённом хранилище браузера — ввести нужно один раз.</p>
+      </div>
+    </section>
+
+    <section id="resultsSection" class="results" hidden>
+      <div class="compactSearchRow">
+        <form id="compactForm" class="searchBar searchBar--compact">
+          <span class="searchBar__icon" data-icon="search"></span>
+          <input id="compactInput" class="searchBar__input" type="text" maxlength="400" autocomplete="off"
+                 placeholder="Новый запрос" aria-label="Новый поисковый запрос">
+          <button class="searchBar__submit" type="submit">Найти</button>
+        </form>
+        <div id="compactModeSwitch" class="modeSwitch modeSwitch--compact" role="group" aria-label="Режим поиска">
+          <span class="modeSwitch__thumb" aria-hidden="true"></span>
+          <button type="button" class="modeSwitch__btn" data-mode="simple" aria-pressed="false">
+            <span class="modeSwitch__icon" data-icon="zap"></span>
+            <span class="modeSwitch__label">Быстрый</span>
+          </button>
+          <button type="button" class="modeSwitch__btn" data-mode="deep" aria-pressed="false">
+            <span class="modeSwitch__icon" data-icon="spark"></span>
+            <span class="modeSwitch__label">Deep Research</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="results__grid">
+        <article class="panel article">
+          <div class="article__titleRow">
+            <h1 id="queryTitle" class="article__title"></h1>
+            <span id="modeBadge" class="modeBadge"></span>
+          </div>
+
+          <div id="answerBlock" class="answerBlock">
+            <div class="sectionLabel"><span class="sectionLabel__spark">✦</span>Ответ BitrixGPT</div>
+            <div id="answerContent" class="answer skeleton">
+              <div class="skeletonLine"></div>
+              <div class="skeletonLine skeletonLine--w2"></div>
+              <div class="skeletonLine skeletonLine--w3"></div>
+            </div>
+          </div>
+
+          <div id="errorBlock" class="errorBlock" hidden>
+            <span class="errorBlock__icon" data-icon="alert"></span>
+            <h2 id="errorTitle" class="errorBlock__title"></h2>
+            <p id="errorMessage" class="errorBlock__text"></p>
+            <button id="retryBtn" type="button" class="btn btn--primary">Попробовать снова</button>
+          </div>
+
+          <div id="sourcesWrap" class="sourcesWrap" hidden>
+            <div class="sectionLabel">Источники</div>
+            <div id="sourcesGrid" class="sourcesGrid"></div>
+          </div>
+        </article>
+
+        <aside class="panel asideTimeline">
+          <div class="sectionLabel"><span class="pulseDot"></span>Ход исследования</div>
+          <ol id="timelineList" class="timeline"></ol>
+        </aside>
+      </div>
+    </section>
+
   </main>
+
+  <dialog id="settingsDialog" class="settingsDialog">
+    <div class="settingsDialog__header">
+      <h2>Токен BitrixGPT</h2>
+      <button id="settingsCloseBtn" type="button" class="iconBtn iconBtn--small" data-icon="x" aria-label="Закрыть"></button>
+    </div>
+    <p id="settingsStatus" class="settingsDialog__status"></p>
+    <form id="settingsForm" class="settingsDialog__form">
+      <input id="settingsTokenInput" type="password" autocomplete="off" placeholder="wsa_…" aria-label="Новый токен">
+      <button type="submit" class="btn btn--primary">Сохранить</button>
+    </form>
+    <p id="settingsError" class="settingsDialog__error" hidden></p>
+    <div class="settingsDialog__danger">
+      <button id="settingsClearBtn" type="button" class="btn btn--danger-ghost">Удалить токен</button>
+      <div id="settingsClearConfirm" class="settingsDialog__confirm" hidden>
+        <span>Точно удалить сохранённый токен?</span>
+        <div class="settingsDialog__confirmActions">
+          <button id="settingsClearConfirmBtn" type="button" class="btn btn--danger">Удалить</button>
+          <button id="settingsClearCancelBtn" type="button" class="btn btn--ghost">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <script type="module" src="bitrix_search.js"></script>
 </body>
 </html>
