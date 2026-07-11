@@ -773,12 +773,25 @@ void AvatarToolbarButton::CloseBitrix24BubbleAndRun(base::OnceClosure action) {
 }
 
 void AvatarToolbarButton::OnBitrix24BubbleClosed() {
-  bitrix24_bubble_widget_.reset();
-  bitrix24_bubble_delegate_.reset();
-  if (bitrix24_action_after_close_) {
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, std::move(bitrix24_action_after_close_));
-  }
+  // On macOS, losing key status can still dispatch an activation notification
+  // after the close callback. Destroying the delegate synchronously here leaves
+  // BubbleWidgetObserver with a dangling owner during that notification.
+  // Keep both objects alive until the current native event has unwound.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::unique_ptr<views::Widget> widget,
+             std::unique_ptr<views::BubbleDialogDelegate> delegate,
+             base::OnceClosure action) {
+            widget.reset();
+            delegate.reset();
+            if (action) {
+              std::move(action).Run();
+            }
+          },
+          std::move(bitrix24_bubble_widget_),
+          std::move(bitrix24_bubble_delegate_),
+          std::move(bitrix24_action_after_close_)));
 }
 
 void AvatarToolbarButton::AfterPropertyChange(const void* key,
