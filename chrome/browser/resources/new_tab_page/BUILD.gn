@@ -19,6 +19,7 @@ build_webui("build") {
   ]
 
   static_files = [
+    "bitrix_home_bg.jpg",
     "new_tab_page.html",
     "shared_vars.css",
   ]

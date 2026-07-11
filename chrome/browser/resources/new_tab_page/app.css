@@ -189,7 +189,6 @@ cr-most-visited {
 #searchboxContainer,
 ntp-action-chips,
 #webstoreToast,
-#mostVisited,
 ntp-middle-slot-promo,
 #modules,
 #undoToast,
@@ -199,6 +198,388 @@ individual-promos,
 #themeAttribution,
 #contentBottomSpacer {
   display: none !important;
+}
+
+#bitrixHome {
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  inset: 0;
+  overflow: auto;
+  position: fixed;
+  width: 100%;
+}
+
+#bitrixHomeBackdrop,
+#bitrixHomeShade {
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+}
+
+#bitrixHomeBackdrop {
+  background: #06133c url('bitrix_home_bg.jpg') center / cover no-repeat;
+}
+
+#bitrixHomeShade {
+  background:
+      radial-gradient(circle at 50% 18%, rgba(12, 40, 104, 0.04),
+          rgba(2, 10, 39, 0.4) 48%, rgba(1, 7, 27, 0.76) 100%),
+      linear-gradient(180deg, rgba(2, 9, 34, 0.1), rgba(2, 8, 30, 0.66));
+  backdrop-filter: saturate(82%);
+}
+
+#bitrixHomeContent {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  margin: 0 auto;
+  max-width: 920px;
+  min-height: 100%;
+  padding: clamp(58px, 9vh, 96px) 24px 24px;
+  position: relative;
+}
+
+.bitrix-hero {
+  margin: 0 auto;
+  max-width: 680px;
+  text-align: center;
+  width: 100%;
+}
+
+.bitrix-brand {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.88);
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 650;
+  gap: 9px;
+  letter-spacing: 0.01em;
+  margin-bottom: 9px;
+}
+
+.bitrix-brand__mark {
+  align-items: center;
+  background: linear-gradient(135deg, #58dbff, #187bff);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 9px;
+  box-shadow: 0 8px 24px rgba(34, 166, 255, 0.3);
+  display: inline-flex;
+  font-size: 15px;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.bitrix-hero h1 {
+  font-size: clamp(30px, 3.2vw, 40px);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  line-height: 1.03;
+  margin: 0;
+  text-shadow: 0 5px 28px rgba(0, 0, 0, 0.32);
+}
+
+.bitrix-hero > p {
+  color: rgba(235, 244, 255, 0.73);
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 9px auto 15px;
+}
+
+.bitrix-search {
+  align-items: center;
+  backdrop-filter: blur(22px) saturate(130%);
+  background: rgba(248, 252, 255, 0.93);
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 16px;
+  box-sizing: border-box;
+  box-shadow: 0 16px 48px rgba(0, 15, 66, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  display: flex;
+  height: 54px;
+  margin-inline: auto;
+  max-width: 680px;
+  padding: 0 7px 0 18px;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+  width: 100%;
+}
+
+.bitrix-search:focus-within {
+  box-shadow: 0 20px 58px rgba(0, 15, 66, 0.42),
+      0 0 0 3px rgba(75, 196, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.bitrix-search__icon {
+  fill: none;
+  flex: 0 0 22px;
+  height: 22px;
+  margin-right: 12px;
+  position: static;
+  stroke: #6e7d96;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+  width: 22px;
+}
+
+.bitrix-search input {
+  background: transparent;
+  border: 0;
+  color: #102242;
+  flex: 1;
+  font: inherit;
+  font-size: 16px;
+  height: 100%;
+  line-height: normal;
+  min-width: 0;
+  outline: 0;
+}
+
+.bitrix-search input::placeholder {
+  color: #8390a5;
+}
+
+.bitrix-search button {
+  align-items: center;
+  background: linear-gradient(135deg, #19b9f3, #196ff5);
+  border: 0;
+  border-radius: 13px;
+  box-shadow: 0 7px 20px rgba(24, 112, 244, 0.3);
+  cursor: pointer;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  transition: filter 140ms ease, transform 140ms ease;
+  width: 44px;
+}
+
+.bitrix-search button:hover {
+  filter: brightness(1.08);
+  transform: translateX(1px);
+}
+
+.bitrix-search button svg,
+.bitrix-news__item svg {
+  fill: none;
+  height: 21px;
+  position: static;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 21px;
+}
+
+.bitrix-section,
+.bitrix-card {
+  backdrop-filter: blur(22px) saturate(125%);
+  background: linear-gradient(145deg, rgba(9, 30, 77, 0.7),
+      rgba(7, 20, 57, 0.5));
+  border: 1px solid rgba(159, 210, 255, 0.2);
+  box-shadow: 0 14px 36px rgba(0, 6, 31, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.bitrix-section {
+  border-radius: 16px;
+  padding: 12px 16px 4px;
+}
+
+.bitrix-section__heading,
+.bitrix-card__heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.bitrix-section__heading h2,
+.bitrix-card h2 {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.bitrix-section__heading > span,
+.bitrix-card__eyebrow {
+  color: rgba(212, 230, 255, 0.54);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+#mostVisited {
+  --most-visited-text-color: rgba(255, 255, 255, 0.86);
+  --most-visited-text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+  display: block !important;
+  height: 102px;
+  margin: 0 auto;
+  max-width: 680px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.bitrix-skeleton--recents {
+  height: 102px;
+}
+
+.bitrix-grid {
+  display: grid;
+  gap: 13px;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(420px, 1.58fr);
+}
+
+.bitrix-card {
+  border-radius: 16px;
+  box-sizing: border-box;
+  min-height: 148px;
+  padding: 16px;
+}
+
+.bitrix-card__heading h2 {
+  font-size: 16px;
+  margin-top: 3px;
+}
+
+.bitrix-weather__icon {
+  align-items: center;
+  background: rgba(92, 205, 255, 0.12);
+  border: 1px solid rgba(124, 218, 255, 0.22);
+  border-radius: 14px;
+  color: #8de5ff;
+  display: flex;
+  font-size: 25px;
+  height: 43px;
+  justify-content: center;
+  width: 43px;
+}
+
+.bitrix-weather__main {
+  align-items: flex-end;
+  display: flex;
+  gap: 17px;
+  margin-top: 18px;
+}
+
+.bitrix-weather__main > strong {
+  font-size: 43px;
+  font-weight: 580;
+  letter-spacing: -0.07em;
+  line-height: 0.88;
+}
+
+.bitrix-weather__main div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bitrix-weather__main span {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+}
+
+.bitrix-weather__main small {
+  color: rgba(211, 231, 255, 0.52);
+  font-size: 11px;
+}
+
+.bitrix-live {
+  align-items: center;
+  color: rgba(214, 239, 255, 0.65);
+  display: flex;
+  font-size: 10px;
+  font-weight: 700;
+  gap: 6px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.bitrix-live i {
+  background: #4ee5a1;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(78, 229, 161, 0.7);
+  height: 6px;
+  width: 6px;
+}
+
+.bitrix-news__list {
+  display: grid;
+  gap: 1px;
+  margin-top: 10px;
+}
+
+.bitrix-news__item {
+  align-items: center;
+  border-radius: 9px;
+  color: inherit;
+  display: grid;
+  gap: 11px;
+  grid-template-columns: 22px 1fr 20px;
+  min-height: 27px;
+  padding: 2px 7px;
+  text-decoration: none;
+  transition: background 130ms ease;
+}
+
+.bitrix-news__item:hover {
+  background: rgba(112, 203, 255, 0.11);
+}
+
+.bitrix-news__item > span {
+  color: #5fcfff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.bitrix-news__item strong {
+  font-size: 12px;
+  font-weight: 520;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bitrix-news__item svg {
+  color: rgba(190, 222, 255, 0.48);
+  height: 15px;
+  width: 15px;
+}
+
+@media (max-width: 720px) {
+  #bitrixHomeContent {
+    padding: 28px 16px;
+  }
+
+  .bitrix-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bitrix-hero h1 {
+    font-size: 34px;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 721px) {
+  #bitrixHomeContent {
+    gap: 12px;
+    padding-bottom: 18px;
+    padding-top: 24px;
+  }
+
+  .bitrix-brand {
+    margin-bottom: 8px;
+  }
+
+  .bitrix-hero > p {
+    margin: 8px auto 13px;
+  }
+
+  .bitrix-card {
+    min-height: 150px;
+  }
 }
 
 #logo {
@@ -335,7 +716,7 @@ ntp-middle-slot-promo:not([hidden]) ~ #modules {
   width: 1px;
 }
 
-svg {
+:host > svg {
   position: fixed;
 }
 

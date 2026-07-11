@@ -175,9 +175,10 @@ struct NewTabURLDetails {
     const GURL local_url;
 #else
     const bool default_is_google = DefaultSearchProviderIsGoogle(profile);
-    const GURL local_url(default_is_google
-                             ? chrome::ChromeUINewTabPageURLAsGURL()
-                             : GURL(chrome::kChromeUINewTabPageThirdPartyURL));
+    // Bitrix Browser owns its New Tab experience. If the selected search
+    // provider does not publish a valid remote NTP, use the Bitrix WebUI
+    // instead of Chromium's generic third-party fallback.
+    const GURL local_url(chrome::ChromeUINewTabPageURLAsGURL());
     if (default_is_google) {
       return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
     }

@@ -664,7 +664,7 @@ GURL Browser::GetNewTabURL() const {
           web_app::AppBrowserController::From(this)) {
     return app_browser_controller->GetAppNewTabUrl();
   }
-  return chrome::ChromeUINewTabURLAsGURL();
+  return chrome::ChromeUINewTabPageURLAsGURL();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

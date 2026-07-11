@@ -3,6 +3,85 @@ import {SubmitButtonIconType} from '//resources/cr_components/composebox/compose
 #html_wrapper_imports_end -->
 <div id="content"
   ?ntp-threads-rail-open="${this.showComposebox_ && this.enableThreadsRail_}">
+  <main id="bitrixHome">
+    <div id="bitrixHomeBackdrop"></div>
+    <div id="bitrixHomeShade"></div>
+    <div id="bitrixHomeContent">
+      <header class="bitrix-hero">
+        <div class="bitrix-brand">
+          <span class="bitrix-brand__mark">B</span>
+          <span>Bitrix Search</span>
+        </div>
+        <h1>Найдите главное. Быстрее.</h1>
+        <p>Ищите в интернете и переходите к рабочим страницам из одного окна.</p>
+        <form class="bitrix-search" @submit="${this.onBitrixSearchSubmit_}">
+          <svg class="bitrix-search__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"></path>
+          </svg>
+          <input id="bitrixSearchInput" name="query" autocomplete="off"
+              placeholder="Что хотите найти?" aria-label="Поиск в Bitrix Search">
+          <button type="submit" aria-label="Найти">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+        </form>
+      </header>
+
+      <section class="bitrix-section bitrix-recents" aria-labelledby="recentsTitle">
+        <div class="bitrix-section__heading">
+          <h2 id="recentsTitle">Недавние страницы</h2>
+          <span>Быстрый доступ</span>
+        </div>
+        ${this.lazyRender_ && this.shortcutsEnabled_ ? html`
+          <cr-most-visited id="mostVisited" .theme="${this.theme_?.mostVisited || null}"
+              single-row reflow-on-overflow
+              max-tiles-in-collapsed-state="6"
+              max-shortcuts-in-expanded-state="6"
+              max-most-visited-tiles-in-expanded-state="6"
+              max-enterprise-shortcuts="${this.maxEnterpriseShortcuts_}"
+              @most-visited-auto-removed="${this.onMostVisitedAutoRemoved_}">
+          </cr-most-visited>
+        ` : html`<div class="bitrix-skeleton bitrix-skeleton--recents"></div>`}
+      </section>
+
+      <div class="bitrix-grid">
+        <section class="bitrix-card bitrix-weather" aria-labelledby="weatherTitle">
+          <div class="bitrix-card__heading">
+            <div>
+              <span class="bitrix-card__eyebrow">Сейчас</span>
+              <h2 id="weatherTitle">Калининград</h2>
+            </div>
+            <span class="bitrix-weather__icon">${this.bitrixWeatherIcon_}</span>
+          </div>
+          <div class="bitrix-weather__main">
+            <strong>${this.bitrixWeatherTemperature_}</strong>
+            <div>
+              <span>${this.bitrixWeatherDescription_}</span>
+              <small>Ветер ${this.bitrixWeatherWind_}</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="bitrix-card bitrix-news" aria-labelledby="newsTitle">
+          <div class="bitrix-card__heading">
+            <div>
+              <span class="bitrix-card__eyebrow">В фокусе</span>
+              <h2 id="newsTitle">Новости технологий</h2>
+            </div>
+            <span class="bitrix-live"><i></i> обзор</span>
+          </div>
+          <div class="bitrix-news__list">
+            ${this.bitrixNews_.map((item, index) => html`
+              <a href="${item.url}" class="bitrix-news__item">
+                <span>${String(index + 1).padStart(2, '0')}</span>
+                <strong>${item.title}</strong>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+              </a>
+            `)}
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
   ${this.lazyRender_ && this.microsoftModuleEnabled_ ? html`
     <iframe id="microsoftAuth" src="${this.microsoftAuthIframePath_}"></iframe>
   ` : ''}
@@ -139,17 +218,6 @@ import {SubmitButtonIconType} from '//resources/cr_components/composebox/compose
     </cr-toast>
   ` : ''}
   ${this.lazyRender_ ? html`
-    ${this.shortcutsEnabled_ ? html`
-      <cr-most-visited id="mostVisited" .theme="${this.theme_?.mostVisited || null}"
-          single-row reflow-on-overflow
-          ?expandable-tiles-enabled="${this.ntpNextFeaturesEnabled_}"
-          max-tiles-in-collapsed-state="${this.maxTilesInCollapsedState_}"
-          max-shortcuts-in-expanded-state="${this.maxShortcutsInExpandedState_}"
-          max-most-visited-tiles-in-expanded-state="${this.maxMostVisitedTilesInExpandedState_}"
-          max-enterprise-shortcuts="${this.maxEnterpriseShortcuts_}"
-          @most-visited-auto-removed="${this.onMostVisitedAutoRemoved_}">
-      </cr-most-visited>
-    ` : ''}
     ${this.middleSlotPromoEnabled_ ? html`
       <ntp-middle-slot-promo
           @ntp-middle-slot-promo-loaded="${this.onNtpMiddleSlotPromoLoaded_}"

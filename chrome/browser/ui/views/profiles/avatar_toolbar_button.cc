@@ -13,8 +13,10 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/i18n/case_conversion.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -85,6 +87,7 @@
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -104,6 +107,8 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -113,6 +118,49 @@ constexpr int kChromeRefreshImageLabelPadding = 6;
 
 // Value used to enlarge the AvatarIcon to accommodate for DIP scaling.
 constexpr int kAvatarIconEnlargement = 1;
+
+constexpr SkColor kBitrixBubbleBackground = SkColorSetRGB(5, 22, 61);
+constexpr SkColor kBitrixBubbleSurface = SkColorSetRGB(10, 39, 91);
+constexpr SkColor kBitrixAccent = SkColorSetRGB(45, 196, 246);
+constexpr SkColor kBitrixAccentDark = SkColorSetRGB(4, 35, 72);
+constexpr SkColor kBitrixText = SkColorSetRGB(246, 250, 255);
+constexpr SkColor kBitrixTextMuted = SkColorSetRGB(157, 181, 218);
+constexpr SkColor kBitrixStroke = SkColorSetRGB(51, 102, 164);
+
+std::u16string GetBitrixProfileInitials(std::string_view profile_name) {
+  const std::vector<std::u16string> name_parts = base::SplitString(
+      base::UTF8ToUTF16(profile_name), base::kWhitespaceUTF16,
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (name_parts.empty()) {
+    return u"B";
+  }
+
+  std::u16string initials(1, name_parts.front().front());
+  if (name_parts.size() > 1) {
+    initials.push_back(name_parts.back().front());
+  }
+  return base::i18n::ToUpper(initials);
+}
+
+ui::ImageModel CreateBitrixInitialsIcon(std::u16string_view initials,
+                                        int icon_size) {
+  gfx::Canvas canvas(gfx::Size(icon_size, icon_size), 1.0f,
+                     /*is_opaque=*/false);
+  cc::PaintFlags circle_flags;
+  circle_flags.setAntiAlias(true);
+  circle_flags.setColor(kBitrixAccent);
+  canvas.DrawCircle(gfx::PointF(icon_size / 2.0f, icon_size / 2.0f),
+                    icon_size / 2.0f, circle_flags);
+
+  const auto& font_list = views::TypographyProvider::Get().GetFont(
+      views::style::TextContext::CONTEXT_DIALOG_BODY_TEXT,
+      views::style::TextStyle::STYLE_CAPTION_MEDIUM);
+  canvas.DrawStringRectWithFlags(
+      std::u16string(initials), font_list, kBitrixAccentDark,
+      gfx::Rect(icon_size, icon_size), gfx::Canvas::TEXT_ALIGN_CENTER);
+  return ui::ImageModel::FromImageSkia(
+      gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap()));
+}
 
 constexpr net::NetworkTrafficAnnotationTag kBitrix24AvatarTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("bitrix24_portal_avatar", R"(
@@ -150,11 +198,14 @@ class Bitrix24ProfileBubbleView : public views::BubbleDialogDelegate {
         open_portal_(std::move(open_portal)) {
     SetButtons(static_cast<int>(ui::mojom::DialogButton::kNone));
     SetShowCloseButton(false);
-    set_fixed_width(340);
+    SetBackgroundColor(kBitrixBubbleBackground);
+    set_fixed_width(360);
 
     auto contents = std::make_unique<views::BoxLayoutView>();
     contents->SetOrientation(views::BoxLayout::Orientation::kVertical);
-    contents->SetProperty(views::kMarginsKey, gfx::Insets::VH(18, 20));
+    contents->SetBackground(
+        views::CreateRoundedRectBackground(kBitrixBubbleBackground, 20));
+    contents->SetProperty(views::kMarginsKey, gfx::Insets::VH(20, 22));
     BuildContents(contents.get());
     SetContentsView(std::move(contents));
     FetchAvatar(browser->profile()->GetOriginalProfile());
@@ -175,27 +226,29 @@ class Bitrix24ProfileBubbleView : public views::BubbleDialogDelegate {
     auto* profile_row =
         contents->AddChildView(std::make_unique<views::BoxLayoutView>());
     profile_row->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
-    profile_row->SetBetweenChildSpacing(12);
+    profile_row->SetCrossAxisAlignment(
+        views::BoxLayout::CrossAxisAlignment::kCenter);
+    profile_row->SetBetweenChildSpacing(14);
 
     std::u16string profile_name = base::UTF8ToUTF16(service_->profile_name());
-    std::u16string initial = profile_name.empty()
-                                 ? std::u16string(u"B")
-                                 : std::u16string(1, profile_name.front());
+    const std::u16string initials =
+        GetBitrixProfileInitials(service_->profile_name());
     auto avatar_container = std::make_unique<views::View>();
-    avatar_container->SetPreferredSize(gfx::Size(44, 44));
+    avatar_container->SetPreferredSize(gfx::Size(48, 48));
     avatar_container->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-    auto avatar_fallback = std::make_unique<views::Label>(initial);
+    auto avatar_fallback = std::make_unique<views::Label>(initials);
     avatar_fallback->SetBackground(
-        views::CreateRoundedRectBackground(SkColorSetRGB(47, 198, 246), 22));
-    avatar_fallback->SetEnabledColor(SK_ColorWHITE);
+        views::CreateRoundedRectBackground(kBitrixAccent, 24));
+    avatar_fallback->SetEnabledColor(kBitrixAccentDark);
     avatar_fallback->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    avatar_fallback->SetTextStyle(views::style::STYLE_BODY_3_EMPHASIS);
     avatar_fallback_ =
         avatar_container->AddChildView(std::move(avatar_fallback));
 
     auto avatar_image = std::make_unique<views::ImageView>();
-    avatar_image->SetImageSize(gfx::Size(44, 44));
-    avatar_image->SetCornerRadius(22);
+    avatar_image->SetImageSize(gfx::Size(48, 48));
+    avatar_image->SetCornerRadius(24);
     avatar_image->SetVisible(false);
     avatar_image_ = avatar_container->AddChildView(std::move(avatar_image));
     profile_row->AddChildView(std::move(avatar_container));
@@ -211,6 +264,7 @@ class Bitrix24ProfileBubbleView : public views::BubbleDialogDelegate {
                   : u"Bitrix24"));
     title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     title->SetTextStyle(views::style::STYLE_BODY_3_EMPHASIS);
+    title->SetEnabledColor(kBitrixText);
 
     std::u16string subtitle;
     if (signed_in) {
@@ -225,26 +279,41 @@ class Bitrix24ProfileBubbleView : public views::BubbleDialogDelegate {
     auto* portal =
         details->AddChildView(std::make_unique<views::Label>(subtitle));
     portal->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    portal->SetEnabledColor(SK_ColorGRAY);
+    portal->SetEnabledColor(kBitrixTextMuted);
 
     auto* actions =
         contents->AddChildView(std::make_unique<views::BoxLayoutView>());
     actions->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
     actions->SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kEnd);
-    actions->SetBetweenChildSpacing(8);
-    actions->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(16, 0, 0, 0));
+    actions->SetBetweenChildSpacing(10);
+    actions->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(20, 62, 0, 0));
 
     if (signed_in) {
-      actions->AddChildView(std::make_unique<views::MdTextButton>(
-          open_portal_, u"Открыть портал"));
-      actions->AddChildView(
-          std::make_unique<views::MdTextButton>(sign_out_, u"Выйти"));
+      auto* portal_button =
+          actions->AddChildView(std::make_unique<views::MdTextButton>(
+              open_portal_, u"Открыть портал"));
+      StyleActionButton(portal_button, true);
+      auto* sign_out_button =
+          actions->AddChildView(std::make_unique<views::MdTextButton>(
+              sign_out_, u"Выйти"));
+      StyleActionButton(sign_out_button, false);
     } else {
       auto* login = actions->AddChildView(std::make_unique<views::MdTextButton>(
           start_login_,
           authorizing ? u"Авторизация открыта" : u"Войти в Bitrix24"));
+      StyleActionButton(login, true);
       login->SetEnabled(!authorizing);
     }
+  }
+
+  void StyleActionButton(views::MdTextButton* button, bool primary) {
+    button->SetCornerRadius(14);
+    button->SetCustomPadding(gfx::Insets::VH(10, 16));
+    button->SetBgColorOverrideDeprecated(
+        primary ? std::optional<SkColor>(kBitrixAccent)
+                : std::optional<SkColor>(kBitrixBubbleSurface));
+    button->SetStrokeColorOverrideDeprecated(kBitrixStroke);
+    button->SetEnabledTextColors(primary ? kBitrixAccentDark : kBitrixText);
   }
 
   void FetchAvatar(Profile* profile) {
@@ -350,6 +419,16 @@ void AvatarToolbarButton::UpdateIcon() {
   auto [icon, icon_type] = state_provider->GetAvatarIcon(
       icon_size, GetForegroundColor(ButtonState::STATE_NORMAL),
       *color_provider);
+
+  Browser* browser = state_manager_.browser();
+  if (browser && browser->profile()->IsRegularProfile()) {
+    Bitrix24AuthService* service = Bitrix24AuthServiceFactory::GetForProfile(
+        browser->profile()->GetOriginalProfile());
+    if (service->state() == Bitrix24AuthService::State::kSignedIn) {
+      icon = CreateBitrixInitialsIcon(
+          GetBitrixProfileInitials(service->profile_name()), icon_size);
+    }
+  }
 
   SetImageModel(ButtonState::STATE_NORMAL, icon);
   SetImageModel(ButtonState::STATE_DISABLED,

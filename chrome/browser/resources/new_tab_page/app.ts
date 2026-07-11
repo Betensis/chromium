@@ -172,6 +172,11 @@ function recordShowBrowserPromosResult(result: ShowNtpPromosResult) {
 
 const PERMISSION_PROMPT_CSS_CLASS = 'permission-prompt-showing';
 
+interface BitrixNewsItem {
+  title: string;
+  url: string;
+}
+
 const AppElementBase = HelpBubbleMixinLit(CrLitElement);
 
 export interface AppElement {
@@ -383,6 +388,11 @@ export class AppElement extends AppElementBase {
       energyEffectEnabled_: {type: Boolean, reflect: true},
       energyEffectAnimationEnabled_: {type: Boolean, reflect: true},
       isAndroid_: {type: Boolean},
+      bitrixWeatherTemperature_: {type: String},
+      bitrixWeatherDescription_: {type: String},
+      bitrixWeatherWind_: {type: String},
+      bitrixWeatherIcon_: {type: String},
+      bitrixNews_: {type: Array},
     };
   }
 
@@ -503,6 +513,25 @@ export class AppElement extends AppElementBase {
       loadTimeData.getBoolean('energyEffectAnimationEnabled');
   protected accessor isAndroid_: boolean =
       loadTimeData.getBoolean('isAndroid');
+  protected accessor bitrixWeatherTemperature_: string = '+14°';
+  protected accessor bitrixWeatherDescription_: string =
+      'Облачно с прояснениями';
+  protected accessor bitrixWeatherWind_: string = '4 м/с';
+  protected accessor bitrixWeatherIcon_: string = '◒';
+  protected accessor bitrixNews_: BitrixNewsItem[] = [
+    {
+      title: 'Bitrix Search готов к новым запросам',
+      url: 'chrome://bitrix-search/',
+    },
+    {
+      title: 'Откройте рабочий портал Bitrix24',
+      url: 'http://byank.bx/',
+    },
+    {
+      title: 'Открыть ленту технологических новостей',
+      url: 'https://news.ycombinator.com/',
+    },
+  ];
   protected contextMenuAnimationLimitingEnabled_: boolean =
       loadTimeData.getBoolean('contextMenuAnimationLimitingEnabled');
   protected accessor searchboxCallbackRouter_: SearchboxPageCallbackRouter;
@@ -700,6 +729,19 @@ export class AppElement extends AppElementBase {
     }
 
     this.initializeContextMenuAnimationState_();
+  }
+
+  protected onBitrixSearchSubmit_(event: SubmitEvent) {
+    event.preventDefault();
+    const input = this.shadowRoot.querySelector<HTMLInputElement>(
+        '#bitrixSearchInput');
+    const query = input?.value.trim() || '';
+    if (!query) {
+      input?.focus();
+      return;
+    }
+    WindowProxy.getInstance().navigate(
+        `chrome://bitrix-search/?q=${encodeURIComponent(query)}&mode=deep`);
   }
 
   override disconnectedCallback() {
