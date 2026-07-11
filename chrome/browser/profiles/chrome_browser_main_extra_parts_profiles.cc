@@ -138,6 +138,7 @@
 #include "chrome/browser/navigation_predictor/search_engine_preconnector_keyed_service_factory.h"
 #include "chrome/browser/net/dns_probe_service_factory.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
+#include "chrome/browser/new_tab_page/bitrix24_auth/bitrix24_auth_service_factory.h"
 #include "chrome/browser/new_tab_page/microsoft_auth/microsoft_auth_service_factory.h"
 #include "chrome/browser/new_tab_page/promos/promo_service_factory.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
@@ -1194,6 +1195,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   private_insights::PrivateInsightsServiceFactory::GetInstance();
   ProfileMetricsServiceFactory::GetInstance();
 #if BUILDFLAG(ENABLE_WEBUI_NTP)
+  Bitrix24AuthServiceFactory::GetInstance();
   DriveServiceFactory::GetInstance();
   MicrosoftAuthServiceFactory::GetInstance();
 #endif

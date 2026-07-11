@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_TOOLBAR_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_TOOLBAR_BUTTON_H_
 
+#include <memory>
+
 #include "base/auto_reset.h"
 #include "base/callback_list.h"
 #include "base/functional/callback.h"
@@ -27,6 +29,11 @@ class BrowserView;
 struct AccountInfo;
 class StateProvider;
 class AvatarToolbarButtonTestAccessor;
+
+namespace views {
+class BubbleDialogDelegate;
+class Widget;
+}  // namespace views
 
 // This class takes care the Profile Avatar Button.
 // Primarily applies UI configuration.
@@ -121,6 +128,9 @@ class AvatarToolbarButton : public ToolbarButton,
                          const ui::ColorProvider* color_provider);
   void UpdateAccessibilityLabel();
   void AnnounceInternal(std::u16string text);
+  void ShowBitrix24Bubble();
+  void CloseBitrix24BubbleAndRun(base::OnceClosure action);
+  void OnBitrix24BubbleClosed();
 
   // views::View:
   gfx::Size CalculatePreferredSize(
@@ -145,6 +155,10 @@ class AvatarToolbarButton : public ToolbarButton,
   gfx::SlideAnimation slide_animation_;
 
   base::OnceCallback<void(std::u16string)> announce_callback_for_testing_;
+
+  std::unique_ptr<views::BubbleDialogDelegate> bitrix24_bubble_delegate_;
+  std::unique_ptr<views::Widget> bitrix24_bubble_widget_;
+  base::OnceClosure bitrix24_action_after_close_;
 
   base::WeakPtrFactory<AvatarToolbarButton> weak_ptr_factory_{this};
 };

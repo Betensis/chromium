@@ -20,11 +20,15 @@
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
+#include "chrome/browser/new_tab_page/bitrix24_auth/bitrix24_auth_service.h"
+#include "chrome/browser/new_tab_page/bitrix24_auth/bitrix24_auth_service_factory.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -36,8 +40,11 @@
 #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/navigator/browser_navigator.h"
+#include "chrome/browser/ui/navigator/browser_navigator_params.h"
 #include "chrome/browser/ui/profiles/profile_colors_util.h"
 #include "chrome/browser/ui/signin/dice_migration_service.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -53,6 +60,8 @@
 #include "chrome/browser/webauthn/passkey_unlock_manager_factory.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/image_fetcher/core/image_fetcher.h"
+#include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/signin_prefs.h"
@@ -60,15 +69,19 @@
 #include "components/signin/public/identity_manager/tribool.h"
 #include "components/sync/base/features.h"
 #include "components/user_education/common/user_education_class_properties.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_utils.h"
 #include "google_apis/gaia/gaia_id.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model_utils.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/mojom/dialog_button.mojom.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/compositor/layer.h"
@@ -81,9 +94,18 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host.h"
+#include "ui/views/background.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/box_layout_view.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -91,6 +113,176 @@ constexpr int kChromeRefreshImageLabelPadding = 6;
 
 // Value used to enlarge the AvatarIcon to accommodate for DIP scaling.
 constexpr int kAvatarIconEnlargement = 1;
+
+constexpr net::NetworkTrafficAnnotationTag kBitrix24AvatarTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("bitrix24_portal_avatar", R"(
+      semantics {
+        sender: "Bitrix24 portal profile popup"
+        description:
+          "Downloads the signed-in user's avatar from their selected "
+          "Bitrix24 cloud portal for display in the browser profile popup."
+        trigger: "The user opens the Bitrix24 profile popup."
+        data: "The public avatar URL returned by Bitrix24 Network."
+        destination: OTHER
+        destination_other: "The user's selected Bitrix24 cloud portal"
+      }
+      policy {
+        cookies_allowed: NO
+        setting: "The user can sign out from the Bitrix24 profile popup."
+        policy_exception_justification: "Not implemented for this MVP."
+      })");
+
+class Bitrix24ProfileBubbleView : public views::BubbleDialogDelegate {
+ public:
+  Bitrix24ProfileBubbleView(AvatarToolbarButton* anchor,
+                            Browser* browser,
+                            base::RepeatingClosure start_login,
+                            base::RepeatingClosure sign_out,
+                            base::RepeatingClosure open_portal)
+      : BubbleDialogDelegate(anchor,
+                             views::BubbleBorder::TOP_RIGHT,
+                             views::BubbleBorder::DIALOG_SHADOW,
+                             true),
+        service_(Bitrix24AuthServiceFactory::GetForProfile(
+            browser->profile()->GetOriginalProfile())),
+        start_login_(std::move(start_login)),
+        sign_out_(std::move(sign_out)),
+        open_portal_(std::move(open_portal)) {
+    SetButtons(static_cast<int>(ui::mojom::DialogButton::kNone));
+    SetShowCloseButton(false);
+    set_fixed_width(340);
+
+    auto contents = std::make_unique<views::BoxLayoutView>();
+    contents->SetOrientation(views::BoxLayout::Orientation::kVertical);
+    contents->SetProperty(views::kMarginsKey, gfx::Insets::VH(18, 20));
+    BuildContents(contents.get());
+    SetContentsView(std::move(contents));
+    FetchAvatar(browser->profile()->GetOriginalProfile());
+  }
+
+  Bitrix24ProfileBubbleView(const Bitrix24ProfileBubbleView&) = delete;
+  Bitrix24ProfileBubbleView& operator=(const Bitrix24ProfileBubbleView&) =
+      delete;
+  ~Bitrix24ProfileBubbleView() override = default;
+
+ private:
+  void BuildContents(views::BoxLayoutView* contents) {
+    const bool signed_in =
+        service_->state() == Bitrix24AuthService::State::kSignedIn;
+    const bool authorizing =
+        service_->state() == Bitrix24AuthService::State::kAuthorizing;
+
+    auto* profile_row =
+        contents->AddChildView(std::make_unique<views::BoxLayoutView>());
+    profile_row->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
+    profile_row->SetBetweenChildSpacing(12);
+
+    std::u16string profile_name = base::UTF8ToUTF16(service_->profile_name());
+    std::u16string initial = profile_name.empty()
+                                 ? std::u16string(u"B")
+                                 : std::u16string(1, profile_name.front());
+    auto avatar_container = std::make_unique<views::View>();
+    avatar_container->SetPreferredSize(gfx::Size(44, 44));
+    avatar_container->SetLayoutManager(std::make_unique<views::FillLayout>());
+
+    auto avatar_fallback = std::make_unique<views::Label>(initial);
+    avatar_fallback->SetBackground(
+        views::CreateRoundedRectBackground(SkColorSetRGB(47, 198, 246), 22));
+    avatar_fallback->SetEnabledColor(SK_ColorWHITE);
+    avatar_fallback->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    avatar_fallback_ =
+        avatar_container->AddChildView(std::move(avatar_fallback));
+
+    auto avatar_image = std::make_unique<views::ImageView>();
+    avatar_image->SetImageSize(gfx::Size(44, 44));
+    avatar_image->SetCornerRadius(22);
+    avatar_image->SetVisible(false);
+    avatar_image_ = avatar_container->AddChildView(std::move(avatar_image));
+    profile_row->AddChildView(std::move(avatar_container));
+
+    auto* details =
+        profile_row->AddChildView(std::make_unique<views::BoxLayoutView>());
+    details->SetOrientation(views::BoxLayout::Orientation::kVertical);
+    details->SetCrossAxisAlignment(
+        views::BoxLayout::CrossAxisAlignment::kStart);
+
+    auto* title = details->AddChildView(std::make_unique<views::Label>(
+        signed_in ? (profile_name.empty() ? u"Профиль Bitrix24" : profile_name)
+                  : u"Bitrix24"));
+    title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    title->SetTextStyle(views::style::STYLE_BODY_3_EMPHASIS);
+
+    std::u16string subtitle;
+    if (signed_in) {
+      subtitle = base::UTF8ToUTF16(service_->portal_origin());
+    } else if (authorizing) {
+      subtitle = u"Ожидаем подтверждение авторизации";
+    } else if (service_->state() == Bitrix24AuthService::State::kError) {
+      subtitle = u"Не удалось подключиться. Попробуйте снова";
+    } else {
+      subtitle = u"Подключите облачный портал";
+    }
+    auto* portal =
+        details->AddChildView(std::make_unique<views::Label>(subtitle));
+    portal->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    portal->SetEnabledColor(SK_ColorGRAY);
+
+    auto* actions =
+        contents->AddChildView(std::make_unique<views::BoxLayoutView>());
+    actions->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
+    actions->SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kEnd);
+    actions->SetBetweenChildSpacing(8);
+    actions->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(16, 0, 0, 0));
+
+    if (signed_in) {
+      actions->AddChildView(std::make_unique<views::MdTextButton>(
+          open_portal_, u"Открыть портал"));
+      actions->AddChildView(
+          std::make_unique<views::MdTextButton>(sign_out_, u"Выйти"));
+    } else {
+      auto* login = actions->AddChildView(std::make_unique<views::MdTextButton>(
+          start_login_,
+          authorizing ? u"Авторизация открыта" : u"Войти в Bitrix24"));
+      login->SetEnabled(!authorizing);
+    }
+  }
+
+  void FetchAvatar(Profile* profile) {
+    const GURL avatar_url(service_->profile_avatar_url());
+    if (!avatar_url.is_valid()) {
+      return;
+    }
+    image_fetcher::ImageFetcherService* image_fetcher_service =
+        ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey());
+    image_fetcher::ImageFetcher* image_fetcher =
+        image_fetcher_service->GetImageFetcher(
+            image_fetcher::ImageFetcherConfig::kNetworkOnly);
+    image_fetcher->FetchImage(
+        avatar_url,
+        base::BindOnce(&Bitrix24ProfileBubbleView::OnAvatarFetched,
+                       weak_factory_.GetWeakPtr()),
+        image_fetcher::ImageFetcherParams(kBitrix24AvatarTrafficAnnotation,
+                                          "Bitrix24PortalAvatar"));
+  }
+
+  void OnAvatarFetched(const gfx::Image& image,
+                       const image_fetcher::RequestMetadata& metadata) {
+    if (image.IsEmpty() || !avatar_image_ || !avatar_fallback_) {
+      return;
+    }
+    avatar_image_->SetImage(ui::ImageModel::FromImage(image));
+    avatar_image_->SetVisible(true);
+    avatar_fallback_->SetVisible(false);
+  }
+
+  const raw_ptr<Bitrix24AuthService> service_;
+  raw_ptr<views::ImageView> avatar_image_ = nullptr;
+  raw_ptr<views::Label> avatar_fallback_ = nullptr;
+  const base::RepeatingClosure start_login_;
+  const base::RepeatingClosure sign_out_;
+  const base::RepeatingClosure open_portal_;
+  base::WeakPtrFactory<Bitrix24ProfileBubbleView> weak_factory_{this};
+};
 
 }  // namespace
 
@@ -503,7 +695,90 @@ void AvatarToolbarButton::OnThemeChanged() {
 }
 
 void AvatarToolbarButton::ButtonPressed(bool is_source_accelerator) {
+  Browser* browser = state_manager_.browser();
+  if (browser && browser->profile()->IsRegularProfile()) {
+    if (!bitrix24_bubble_widget_) {
+      ShowBitrix24Bubble();
+    }
+    return;
+  }
   state_manager_.HandleButtonPressed(is_source_accelerator);
+}
+
+void AvatarToolbarButton::ShowBitrix24Bubble() {
+  Browser* browser = state_manager_.browser();
+  CHECK(browser);
+  Bitrix24AuthService* service = Bitrix24AuthServiceFactory::GetForProfile(
+      browser->profile()->GetOriginalProfile());
+  auto close_then_login = base::BindRepeating(
+      [](base::WeakPtr<AvatarToolbarButton> button,
+         Bitrix24AuthService* service, Browser* browser) {
+        if (button) {
+          base::WeakPtr<content::WebContents> source_tab;
+          if (content::WebContents* contents =
+                  browser->GetTabStripModel()->GetActiveWebContents()) {
+            source_tab = contents->GetWeakPtr();
+          }
+          button->CloseBitrix24BubbleAndRun(
+              base::BindOnce(&Bitrix24AuthService::StartLogin,
+                             base::Unretained(service), std::move(source_tab)));
+        }
+      },
+      weak_ptr_factory_.GetWeakPtr(), service, browser);
+  auto close_then_sign_out = base::BindRepeating(
+      [](base::WeakPtr<AvatarToolbarButton> button,
+         Bitrix24AuthService* service) {
+        if (button) {
+          button->CloseBitrix24BubbleAndRun(base::BindOnce(
+              &Bitrix24AuthService::SignOut, base::Unretained(service)));
+        }
+      },
+      weak_ptr_factory_.GetWeakPtr(), service);
+  auto close_then_open_portal = base::BindRepeating(
+      [](base::WeakPtr<AvatarToolbarButton> button, Browser* browser,
+         const std::string& portal_origin) {
+        if (!button) {
+          return;
+        }
+        button->CloseBitrix24BubbleAndRun(base::BindOnce(
+            [](Browser* browser, std::string portal_origin) {
+              const GURL portal_url(portal_origin);
+              if (!portal_url.is_valid()) {
+                return;
+              }
+              NavigateParams params(browser, portal_url,
+                                    ui::PAGE_TRANSITION_LINK);
+              params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+              Navigate(&params);
+            },
+            browser, portal_origin));
+      },
+      weak_ptr_factory_.GetWeakPtr(), browser, service->portal_origin());
+  bitrix24_bubble_delegate_ = std::make_unique<Bitrix24ProfileBubbleView>(
+      this, browser, std::move(close_then_login),
+      std::move(close_then_sign_out), std::move(close_then_open_portal));
+  bitrix24_bubble_widget_ = views::BubbleDialogDelegate::CreateBubble(
+      bitrix24_bubble_delegate_.get(),
+      base::IgnoreArgs<views::Widget::ClosedReason>(
+          base::BindOnce(&AvatarToolbarButton::OnBitrix24BubbleClosed,
+                         weak_ptr_factory_.GetWeakPtr())));
+  bitrix24_bubble_widget_->Show();
+}
+
+void AvatarToolbarButton::CloseBitrix24BubbleAndRun(base::OnceClosure action) {
+  bitrix24_action_after_close_ = std::move(action);
+  if (bitrix24_bubble_widget_) {
+    bitrix24_bubble_widget_->Close();
+  }
+}
+
+void AvatarToolbarButton::OnBitrix24BubbleClosed() {
+  bitrix24_bubble_widget_.reset();
+  bitrix24_bubble_delegate_.reset();
+  if (bitrix24_action_after_close_) {
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(bitrix24_action_after_close_));
+  }
 }
 
 void AvatarToolbarButton::AfterPropertyChange(const void* key,

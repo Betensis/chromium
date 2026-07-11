@@ -20,6 +20,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
+#include "chrome/browser/new_tab_page/bitrix24_auth/bitrix24_auth_navigation_throttle.h"
 #include "chrome/browser/omnibox/geolocation_navigation_throttle.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/policy/chrome_policy_blocklist_service_factory.h"
@@ -552,6 +553,7 @@ void CreateAndAddChromeThrottlesForNavigation(
 
   NtpMicrosoftAuthResponseCaptureNavigationThrottle::MaybeCreateAndAdd(
       registry);
+  Bitrix24AuthNavigationThrottle::MaybeCreateAndAdd(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -593,7 +595,6 @@ void CreateAndAddChromeThrottlesForNavigation(
         registry);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS_CORE)
-
 
   MaybeCreateAndAddVisitedLinkNavigationThrottle(registry);
 

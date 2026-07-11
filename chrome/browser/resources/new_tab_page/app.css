@@ -156,9 +156,9 @@ cr-most-visited {
   align-items: center;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--ntp-one-google-bar-height));
-  min-width: fit-content; /* Prevents OneGoogleBar cutoff at 500% zoom. */
-  padding-top: var(--ntp-one-google-bar-height);
+  height: 100vh;
+  min-width: 0;
+  padding-top: 0;
   position: relative;
   z-index: 1;
 }
@@ -178,6 +178,27 @@ cr-most-visited {
 :host([show-composebox_]) #content,
 :host([show-voice-search-scrim_]) #content {
   z-index: unset;
+}
+
+#microsoftAuth,
+#oneGoogleBarStackingContext,
+#oneGoogleBarScrim,
+#oneGoogleBar,
+#logo,
+#scrim,
+#searchboxContainer,
+ntp-action-chips,
+#webstoreToast,
+#mostVisited,
+ntp-middle-slot-promo,
+#modules,
+#undoToast,
+individual-promos,
+#backgroundImageAttribution,
+#customizeButtons,
+#themeAttribution,
+#contentBottomSpacer {
+  display: none !important;
 }
 
 #logo {

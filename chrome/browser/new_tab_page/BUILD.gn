@@ -9,6 +9,9 @@ assert(enable_webui_ntp)
 # The public API target.
 source_set("new_tab_page") {
   public = [
+    "bitrix24_auth/bitrix24_auth_navigation_throttle.h",
+    "bitrix24_auth/bitrix24_auth_service.h",
+    "bitrix24_auth/bitrix24_auth_service_factory.h",
     "chrome_colors/chrome_colors_factory.h",
     "chrome_colors/chrome_colors_service.h",
     "microsoft_auth/microsoft_auth_service.h",
@@ -77,6 +80,9 @@ source_set("new_tab_page") {
 # The implementation target.
 source_set("impl") {
   sources = [
+    "bitrix24_auth/bitrix24_auth_navigation_throttle.cc",
+    "bitrix24_auth/bitrix24_auth_service.cc",
+    "bitrix24_auth/bitrix24_auth_service_factory.cc",
     "chrome_colors/chrome_colors_factory.cc",
     "chrome_colors/chrome_colors_service.cc",
     "microsoft_auth/microsoft_auth_service.cc",
@@ -131,12 +137,17 @@ source_set("impl") {
     "//components/history_clusters/core",
     "//components/keyed_service/core",
     "//components/ntp_tiles:pref_names",
+    "//components/os_crypt/async/browser",
+    "//components/os_crypt/async/common",
     "//components/page_content_annotations/core:features",
     "//components/prefs",
     "//components/search",
     "//components/signin/core/browser",
     "//components/variations/service",
     "//content/public/browser",
+    "//crypto",
+    "//net",
+    "//services/network/public/cpp",
     "//ui/base",
     "//ui/webui/resources/js/browser_command:mojo_bindings",
   ]
