@@ -584,6 +584,7 @@ template("build_webui") {
         "//chrome/browser/resources/access_code_cast",
         "//chrome/browser/resources/accessibility",
         "//chrome/browser/resources/bookmarks",
+        "//chrome/browser/resources/bitrix_search",
         "//chrome/browser/resources/browser_switch",
         "//chrome/browser/resources/certificate_manager",
         "//chrome/browser/resources/certificate_viewer",

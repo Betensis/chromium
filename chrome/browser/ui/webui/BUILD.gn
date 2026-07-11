@@ -41,6 +41,7 @@ source_set("configs") {
     public_deps = [
       "//chrome/browser/ui/tabs/tab_group_home",
       "//chrome/browser/ui/webui/commerce",
+      "//chrome/browser/ui/webui/bitrix_search",
       "//chrome/browser/ui/webui/drive_picker_host",
       "//chrome/browser/ui/webui/personal_context",
     ]

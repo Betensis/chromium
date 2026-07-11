@@ -245,6 +245,10 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [2880],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/bitrix_search/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2890],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/bookmarks/resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [2900],

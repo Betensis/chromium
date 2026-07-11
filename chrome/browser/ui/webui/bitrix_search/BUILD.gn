@@ -1,0 +1,27 @@
+assert(!is_android)
+
+source_set("bitrix_search") {
+  sources = [
+    "bitrix_search_handler.cc",
+    "bitrix_search_handler.h",
+    "bitrix_search_sse_parser.cc",
+    "bitrix_search_sse_parser.h",
+    "bitrix_search_ui.cc",
+    "bitrix_search_ui.h",
+  ]
+  deps = [
+    "//base",
+    "//chrome/browser/profiles:profile",
+    "//chrome/browser/resources/bitrix_search:resources",
+    "//chrome/common",
+    "//content/public/browser",
+    "//services/network/public/cpp",
+    "//ui/webui",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "bitrix_search_sse_parser_unittest.cc" ]
+  deps = [ ":bitrix_search", "//testing/gtest" ]
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BitrixGPT Search</title>
+  <link rel="stylesheet" href="bitrix_search.css">
+</head>
+<body>
+  <header><a class="brand" href="chrome://newtab"><span class="mark">B</span><b>BitrixGPT</b><span>Search</span></a></header>
+  <main>
+    <form id="searchForm"><input id="query" maxlength="400" autocomplete="off" placeholder="Найдите ответ в интернете"><button>Найти</button></form>
+    <section id="hero"><div class="eyebrow">ИНТЕЛЛЕКТУАЛЬНЫЙ ПОИСК</div><h1 id="title">Что вы хотите узнать?</h1><p id="subtitle">BitrixGPT изучит источники и соберёт ответ с проверяемыми ссылками.</p></section>
+    <div id="layout" hidden>
+      <article>
+        <div class="sectionTitle"><span class="spark">✦</span> Ответ BitrixGPT</div>
+        <div id="answer" class="answer skeleton"><i></i><i></i><i></i></div>
+        <div id="sourcesWrap" hidden><h2>Источники</h2><div id="sources"></div></div>
+      </article>
+      <aside><div class="sectionTitle"><span class="pulse"></span> Ход поиска</div><ol id="steps"><li class="active">Подключаюсь к поисковому агенту</li></ol></aside>
+    </div>
+    <div id="error" hidden><b>Не удалось выполнить поиск</b><p id="errorText"></p><button id="retry">Попробовать снова</button></div>
+  </main>
+  <script type="module" src="bitrix_search.js"></script>
+</body>
+</html>

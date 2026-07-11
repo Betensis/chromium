@@ -216,6 +216,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/actor_overlay_resources.pak",
         "$root_gen_dir/chrome/app_service_internals_resources.pak",
         "$root_gen_dir/chrome/autofill_ml_internals_resources.pak",
+        "$root_gen_dir/chrome/bitrix_search_resources.pak",
         "$root_gen_dir/chrome/bookmarks_resources.pak",
         "$root_gen_dir/chrome/browser/actor/resources/actor_browser_resources.pak",
         "$root_gen_dir/chrome/browser/actor/resources/actor_common_resources.pak",

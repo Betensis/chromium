@@ -1853,6 +1853,23 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     // calling UpdateKeywordSearchTermsForURL.
     ChangeToLoadedState();
 
+    // Hackathon browser branding: always route omnibox searches through the
+    // built-in BitrixGPT results WebUI. Reuse the persisted entry when one is
+    // already present to avoid creating duplicates on every startup.
+    TemplateURL* bitrix_gpt = GetTemplateURLForKeyword(u"bitrixgpt");
+    if (!bitrix_gpt) {
+      TemplateURLData bitrix_data;
+      bitrix_data.SetShortName(u"BitrixGPT");
+      bitrix_data.SetKeyword(u"bitrixgpt");
+      bitrix_data.SetURL("chrome://bitrix-search/?q={searchTerms}");
+      bitrix_data.sync_guid = "bitrixgpt-hackathon-search-provider";
+      bitrix_gpt = Add(std::make_unique<TemplateURL>(bitrix_data));
+    }
+    if (bitrix_gpt && CanMakeDefault(bitrix_gpt)) {
+      SetUserSelectedDefaultSearchProvider(
+          bitrix_gpt, search_engines::ChoiceMadeLocation::kOther);
+    }
+
     // Index any visits that occurred before we finished loading.
     for (const auto& visit_to_add : visits_to_add_) {
       UpdateKeywordSearchTermsForURL(visit_to_add);
@@ -3763,4 +3780,3 @@ void TemplateURLService::AddOverriddenKeywordForTemplateURL(
         base::UTF16ToUTF8(template_url->keyword()));
   }
 }
-

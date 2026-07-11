@@ -54,6 +54,7 @@ group("resources") {
       "app_service_internals:resources",
       "autofill_ml_internals:resources",
       "bookmarks:resources",
+      "bitrix_search:resources",
       "certificate_manager:resources",
       "content_annotator_internals:resources",
       "contextual_cueing/internals:resources",
