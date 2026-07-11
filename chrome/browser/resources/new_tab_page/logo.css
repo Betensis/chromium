@@ -31,20 +31,24 @@
 }
 
 #logo {
-  forced-color-adjust: none;
+  align-items: center;
+  color: #2fc6f6;
+  display: flex;
+  font-family: Arial, sans-serif;
+  font-size: 58px;
+  font-weight: 600;
   height: 92px;
+  justify-content: center;
+  letter-spacing: -2px;
   width: 272px;
 }
 
 :host([single-colored]) #logo {
-  -webkit-mask-image: url(./icons/google_logo.svg);
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 100%;
-  background-color: var(--ntp-logo-color);
+  color: var(--ntp-logo-color);
 }
 
 :host(:not([single-colored])) #logo {
-  background-image: url(./icons/google_logo.svg);
+  color: #2fc6f6;
 }
 
 #imageDoodle {
