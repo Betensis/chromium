@@ -23,7 +23,7 @@
   --radius-md: 14px;
   --radius-sm: 9px;
   color-scheme: dark;
-  font: 14px/1.45 var(--font-ui);
+  font: 16px/1.5 var(--font-ui);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -113,11 +113,11 @@ button { font-family: inherit; }
 
 #messages {
   flex: 1;
-  padding: 16px;
+  padding: 18px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 #messages::-webkit-scrollbar { width: 9px; }
@@ -140,15 +140,15 @@ button { font-family: inherit; }
 .empty-state__title {
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: 20px;
+  font-size: 25px;
   color: var(--text);
   margin: 0 0 6px;
 }
 
 .empty-state__subtitle {
-  margin: 0 0 18px;
+  margin: 0 0 20px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
@@ -164,8 +164,8 @@ button { font-family: inherit; }
   background: var(--surface);
   color: var(--text-muted);
   border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 12.5px;
+  padding: 9px 16px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.18s, color 0.18s, transform 0.18s, background 0.18s;
@@ -182,8 +182,8 @@ button { font-family: inherit; }
 
 .message {
   margin: 0;
-  max-width: 88%;
-  padding: 10px 14px;
+  max-width: 90%;
+  padding: 12px 16px;
   border-radius: var(--radius-md);
   line-height: 1.55;
   white-space: pre-wrap;
@@ -296,7 +296,7 @@ button { font-family: inherit; }
   border-radius: 999px;
   background: rgba(4, 34, 45, 0.22);
   color: #eafaff;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   max-width: 100%;
 }
@@ -349,7 +349,7 @@ button { font-family: inherit; }
   min-height: 18px;
   margin: 0;
   padding: 2px 16px 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-dim);
 }
 
@@ -375,7 +375,7 @@ button { font-family: inherit; }
   gap: 6px;
   display: inline-flex;
   align-items: center;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -404,8 +404,8 @@ button { font-family: inherit; }
 
 .workspace-path {
   display: block;
-  padding: 7px 14px;
-  font-size: 11px;
+  padding: 8px 14px;
+  font-size: 12.5px;
   line-height: 1.4;
   color: var(--text-dim);
   background: rgba(47, 198, 246, 0.06);
@@ -421,7 +421,7 @@ textarea {
   min-width: 0;
   resize: vertical;
   font: inherit;
-  padding: 9px 11px;
+  padding: 11px 13px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -442,8 +442,8 @@ textarea:focus {
   flex: none;
   font: inherit;
   font-weight: 700;
-  font-size: 13px;
-  padding: 10px 16px;
+  font-size: 15px;
+  padding: 12px 18px;
   border: 0;
   border-radius: var(--radius-sm);
   background: linear-gradient(155deg, var(--cyan), var(--cyan-deep));
